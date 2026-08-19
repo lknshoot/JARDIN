@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>🎨 Apprends les Couleurs</title>
+<style>
+  :root { --pink-deep:#e6398f; --pink-soft:#ffd6e8; }
+  * { box-sizing:border-box; }
+  html,body {
+    margin:0; padding:0; min-height:100vh;
+    font-family:'Comic Sans MS','Trebuchet MS',sans-serif;
+    background: linear-gradient(160deg,#fff2fb,#ffe8f5 50%,#ffd9ec);
+    overflow-x:hidden;
+  }
+
+  nav {
+    display:flex; justify-content:center; gap:10px;
+    padding:16px 10px 0; flex-wrap:wrap;
+  }
+  nav a {
+    text-decoration:none;
+    background:white;
+    border:3px solid var(--pink-deep);
+    color:var(--pink-deep);
+    font-weight:bold;
+    padding:7px 16px;
+    border-radius:20px;
+    font-size:0.9em;
+    transition: transform .15s ease, background .15s ease;
+  }
+  nav a:hover { transform: translateY(-2px) scale(1.05); background:var(--pink-soft); }
+  nav a.active { background:var(--pink-deep); color:white; }
+
+  h1 { text-align:center; color:#a3216b; text-shadow:2px 2px 0 white; margin:10px 0 2px; font-size:2em; }
+  .sub-title { text-align:center; color:#8a4070; margin-bottom:10px; }
+
+  #tabs { display:flex; justify-content:center; gap:14px; margin:14px 0 6px; }
+  .tab-btn {
+    border:3px solid #a3216b; background:white; color:#a3216b;
+    font-weight:bold; padding:10px 22px; border-radius:20px;
+    cursor:pointer; font-size:1em;
+  }
+  .tab-btn.active { background:#a3216b; color:white; }
+
+  .panel { display:none; max-width: 920px; margin: 10px auto 50px; padding: 0 16px; }
+  .panel.active { display:block; }
+
+  /* ---- APPRENDRE ---- */
+  #learn-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
+    gap:20px;
+  }
+  .swatch {
+    border-radius:20px;
+    padding: 22px 10px;
+    text-align:center;
+    color:white;
+    font-weight:bold;
+    font-size:1.1em;
+    cursor:pointer;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+    transition: transform .15s ease;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .swatch:hover { transform: translateY(-4px) scale(1.03); }
+  .swatch:active { transform: translateY(2px); }
+  .swatch .shape { font-size: 2.6em; }
+  .swatch.light-text { color:#333; }
+
+  #learn-feedback {
+    text-align:center;
+    margin-top:20px;
+    font-size:1.3em;
+    color:#a3216b;
+    font-weight:bold;
+    min-height: 30px;
+  }
+
+  /* ---- QUIZ ---- */
+  #quiz-box {
+    background:white;
+    border-radius:24px;
+    padding: 26px;
+    text-align:center;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  }
+  #quiz-progress {
+    color:#8a4070; font-weight:bold; margin-bottom:10px;
+  }
+  #quiz-shape {
+    font-size: 6em;
+    margin: 10px auto 18px;
+    filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.2));
+  }
+  #quiz-question { font-size:1.3em; color:#4a2c5e; font-weight:bold; margin-bottom:18px; }
+  #quiz-options {
+    display:grid;
+    grid-template-columns: repeat(2, minmax(120px,1fr));
+    gap:14px;
+    max-width:420px;
+    margin: 0 auto;
+  }
+  .opt-btn {
+    border:none; border-radius:16px; padding: 14px 10px;
+    font-size:1.05em; font-weight:bold; color:white;
+    cursor:pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.15);
+    transition: transform .1s ease;
+  }
+  .opt-btn:hover { transform: translateY(-2px); }
+  .opt-btn.correct { outline: 4px solid #2e7d32; }
+  .opt-btn.wrong { outline: 4px solid #c62828; }
+
+  #quiz-feedback { margin-top:16px; font-size:1.2em; font-weight:bold; min-height:30px; }
+
+  #quiz-result {
+    display:none;
+    text-align:center;
+  }
+  #quiz-result .score { font-size:2.4em; color:var(--pink-deep); font-weight:bold; }
+  #quiz-result p { color:#4a2c5e; font-size:1.1em; }
+  .restart-btn {
+    background: var(--pink-deep); color:white; border:none;
+    padding: 10px 26px; border-radius:20px; font-size:1em;
+    font-weight:bold; cursor:pointer; margin-top:12px;
+  }
+
+  #confetti-layer { position:fixed; inset:0; pointer-events:none; z-index:200; }
+  .confetti { position:absolute; font-size:1.8em; animation: confetti-fall 1.6s ease-in forwards; }
+  @keyframes confetti-fall {
+    from { transform: translateY(-20px) rotate(0deg); opacity:1; }
+    to { transform: translateY(100vh) rotate(360deg); opacity:0; }
+  }  #decor-layer {
+    position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden;
+  }
+  .decor-item {
+    position:absolute;
+    font-size: 1.4em;
+    animation: decor-float linear infinite;
+    opacity:0.7;
+  }
+  @keyframes decor-float {
+    from { transform: translateY(10vh) translateX(0) rotate(0deg); opacity:0; }
+    10%  { opacity:0.7; }
+    90%  { opacity:0.7; }
+    to   { transform: translateY(-110vh) translateX(15px) rotate(15deg); opacity:0; }
+  }
+
+  nav { position:relative; z-index:5; }
+  h1 { position:relative; z-index:5; }
+  .sub-title { position:relative; z-index:5; }
+  #tabs { position:relative; z-index:5; }
+  .panel { position:relative; z-index:5; }
+</style>
+</head>
+<body>
+<div id="decor-layer"></div>
+
+<nav>
+  <a href="accueil.html">🌟 Accueil</a>
+  <a href="animaux-compliments.html">🏡 Jardin</a>
+  <a href="jeu-compter.html">🔢 Compter</a>
+  <a href="couleurs.html" class="active">🎨 Couleurs</a>
+  <a href="bibliotheque.html">📚 Comptines</a>
+</nav>
+
+<h1>🎨 Apprends les Couleurs</h1>
+<div class="sub-title">Clique sur les couleurs pour les découvrir, puis teste-toi avec le quiz !</div>
+
+<div id="tabs">
+  <button class="tab-btn active" data-tab="learn">🖍️ Apprendre</button>
+  <button class="tab-btn" data-tab="quiz">🧠 Quiz</button>
+</div>
+
+<div class="panel active" id="panel-learn">
+  <div id="learn-grid"></div>
+  <div id="learn-feedback"></div>
+</div>
+
+<div class="panel" id="panel-quiz">
+  <div id="quiz-box">
+    <div id="quiz-progress">Question 1 / 8</div>
+    <div id="quiz-shape">🔵</div>
+    <div id="quiz-question">De quelle couleur est cette forme ?</div>
+    <div id="quiz-options"></div>
+    <div id="quiz-feedback"></div>
+  </div>
+  <div id="quiz-result">
+    <div class="score" id="quiz-score-text"></div>
+    <p id="quiz-result-msg"></p>
+    <button class="restart-btn" id="quiz-restart">🔄 Recommencer le quiz</button>
+  </div>
+</div>
+
+<div id="confetti-layer"></div>
+
+<script>
+function rand(a,b){ return Math.random()*(b-a)+a; }
+function randInt(a,b){ return Math.floor(rand(a,b+1)); }
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+
+const colors = [
+  { name:'Rouge',  hex:'#e53935', light:false },
+  { name:'Bleu',   hex:'#1e88e5', light:false },
+  { name:'Jaune',  hex:'#fdd835', light:true  },
+  { name:'Vert',   hex:'#43a047', light:false },
+  { name:'Orange', hex:'#fb8c00', light:false },
+  { name:'Violet', hex:'#8e24aa', light:false },
+  { name:'Rose',   hex:'#ec407a', light:false },
+  { name:'Marron', hex:'#6d4c41', light:false }
+];
+const shapes = ['⬤','⬤','⬤','⬤'];
+
+function speak(text){
+  try {
+    if ('speechSynthesis' in window){
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'fr-FR';
+      u.rate = 0.9;
+      u.pitch = 1.15;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    }
+  } catch(e){}
+}
+
+/* ---- Tabs ---- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ---- Apprendre ---- */
+const learnGrid = document.getElementById('learn-grid');
+const learnFeedback = document.getElementById('learn-feedback');
+colors.forEach(c=>{
+  const el = document.createElement('div');
+  el.className = 'swatch' + (c.light ? ' light-text' : '');
+  el.style.background = c.hex;
+  el.innerHTML = `<span class="shape">⬤</span><span>${c.name}</span>`;
+  el.addEventListener('click', ()=>{
+    learnFeedback.textContent = `C'est le ${c.name.toUpperCase()} ! ${['🎉','✨','🌟','👏'][randInt(0,3)]}`;
+    speak(`C'est le ${c.name}`);
+  });
+  learnGrid.appendChild(el);
+});
+
+/* ---- Quiz ---- */
+const quizProgress = document.getElementById('quiz-progress');
+const quizShape = document.getElementById('quiz-shape');
+const quizOptions = document.getElementById('quiz-options');
+const quizFeedback = document.getElementById('quiz-feedback');
+const quizBox = document.getElementById('quiz-box');
+const quizResult = document.getElementById('quiz-result');
+
+let quizQuestions = [];
+let quizIndex = 0;
+let quizScore = 0;
+let answered = false;
+
+function launchConfetti(){
+  const layer = document.getElementById('confetti-layer');
+  const em = ['🎉','⭐','✨','🎈','🌟'];
+  for (let i=0;i<22;i++){
+    const c = document.createElement('div');
+    c.className='confetti';
+    c.textContent = em[randInt(0,em.length-1)];
+    c.style.left = rand(0,100)+'vw';
+    c.style.animationDelay = rand(0,0.5)+'s';
+    c.style.fontSize = rand(1.2,2.2)+'em';
+    layer.appendChild(c);
+    setTimeout(()=>c.remove(), 2200);
+  }
+}
+
+function buildQuiz(){
+  quizQuestions = shuffle(colors).slice(0,8);
+  quizIndex = 0;
+  quizScore = 0;
+  quizResult.style.display = 'none';
+  quizBox.style.display = 'block';
+  showQuestion();
+}
+
+function showQuestion(){
+  answered = false;
+  quizFeedback.textContent = '';
+  const q = quizQuestions[quizIndex];
+  quizProgress.textContent = `Question ${quizIndex+1} / ${quizQuestions.length}`;
+  quizShape.textContent = '⬤';
+  quizShape.style.color = q.hex;
+
+  let optionPool = shuffle(colors.filter(c=>c.name!==q.name)).slice(0,3);
+  let options = shuffle([q, ...optionPool]);
+
+  quizOptions.innerHTML = '';
+  options.forEach(opt=>{
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.style.background = opt.hex;
+    b.style.color = opt.light ? '#333' : 'white';
+    b.textContent = opt.name;
+    b.addEventListener('click', ()=>{
+      if (answered) return;
+      answered = true;
+      if (opt.name === q.name){
+        b.classList.add('correct');
+        quizFeedback.style.color = '#2e7d32';
+        quizFeedback.textContent = `Bravo, c'est bien le ${q.name} ! 🎉`;
+        quizScore++;
+        speak('Bravo !');
+      } else {
+        b.classList.add('wrong');
+        quizFeedback.style.color = '#c62828';
+        quizFeedback.textContent = `Presque ! C'était le ${q.name} 💛`;
+        [...quizOptions.children].find(x=>x.textContent===q.name).classList.add('correct');
+        speak(`C'était le ${q.name}`);
+      }
+      setTimeout(()=>{
+        quizIndex++;
+        if (quizIndex < quizQuestions.length) showQuestion();
+        else finishQuiz();
+      }, 1400);
+    });
+    quizOptions.appendChild(b);
+  });
+}
+
+function finishQuiz(){
+  quizBox.style.display = 'none';
+  quizResult.style.display = 'block';
+  const total = quizQuestions.length;
+  document.getElementById('quiz-score-text').textContent = `${quizScore} / ${total}`;
+  let msg;
+  if (quizScore === total) msg = "Parfait ! Tu connais toutes les couleurs comme un champion ! 🏆";
+  else if (quizScore >= total*0.6) msg = "Super travail ! Continue comme ça ! 🌟";
+  else msg = "Bien joué ! Entraîne-toi encore un peu dans l'onglet Apprendre 💪";
+  document.getElementById('quiz-result-msg').textContent = msg;
+  if (quizScore >= total*0.6) launchConfetti();
+}
+
+document.getElementById('quiz-restart').addEventListener('click', buildQuiz);
+buildQuiz();
+
+/* ---- Décor flottant ---- */
+const decorLayer = document.getElementById('decor-layer');
+const decorEmojis = ['🎨','🖍️','✨','🌈','⭐'];
+for (let i=0;i<12;i++){
+  const d = document.createElement('div');
+  d.className = 'decor-item';
+  d.textContent = decorEmojis[randInt(0, decorEmojis.length-1)];
+  d.style.left = rand(0,96)+'%';
+  d.style.fontSize = rand(1,2)+'em';
+  d.style.animationDuration = rand(14,26)+'s';
+  d.style.animationDelay = rand(0,20)+'s';
+  decorLayer.appendChild(d);
+}
+</script>
+</body>
+</html>

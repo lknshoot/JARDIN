@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>📚 Bibliothèque des Comptines</title>
+<style>
+  :root { --pink-deep:#e6398f; --pink-soft:#ffd6e8; }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; min-height:100vh;
+    font-family:'Comic Sans MS','Trebuchet MS',sans-serif;
+    background: linear-gradient(160deg,#fff2d9,#ffe3b0 50%,#ffd08a);
+    padding-bottom:40px;
+  }
+
+  nav {
+    display:flex; justify-content:center; gap:12px;
+    padding:16px 10px; flex-wrap:wrap;
+  }
+  nav a {
+    text-decoration:none;
+    background:white;
+    border:3px solid var(--pink-deep);
+    color:var(--pink-deep);
+    font-weight:bold;
+    padding:8px 18px;
+    border-radius:20px;
+    font-size:0.95em;
+    transition: transform .15s ease, background .15s ease;
+  }
+  nav a:hover { transform: translateY(-2px) scale(1.05); background:var(--pink-soft); }
+  nav a.active { background:var(--pink-deep); color:white; }
+
+  h1 {
+    text-align:center; color:#a3216b;
+    text-shadow:2px 2px 0 white;
+    font-size:2.1em; margin:6px 0 4px;
+  }
+  .sub { text-align:center; color:#8a5a1f; margin-bottom:20px; }
+
+  #shelf {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px,1fr));
+    gap:22px;
+    max-width:1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .book {
+    cursor:pointer;
+    border-radius: 10px 14px 14px 10px;
+    padding:16px 10px;
+    color:white;
+    text-align:center;
+    font-weight:bold;
+    box-shadow: 4px 6px 0 rgba(0,0,0,0.15), inset -6px 0 0 rgba(0,0,0,0.15);
+    transition: transform .2s ease, box-shadow .2s ease;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    min-height:170px;
+    justify-content:center;
+  }
+  .book:hover { transform: translateY(-6px) rotate(-1deg); box-shadow:6px 10px 0 rgba(0,0,0,0.2), inset -6px 0 0 rgba(0,0,0,0.15); }
+  .book .icon { font-size:2.6em; }
+  .book .title { font-size:0.95em; line-height:1.25; text-shadow:1px 1px 2px rgba(0,0,0,0.25); }
+
+  /* Modal lecture */
+  #overlay {
+    display:none;
+    position:fixed; inset:0;
+    background: rgba(70,40,20,0.55);
+    align-items:center; justify-content:center;
+    z-index:100;
+    padding:20px;
+  }
+  #overlay.open { display:flex; }
+
+  #bookpage {
+    background: #fffaf0;
+    border-radius:20px;
+    max-width:560px;
+    width:100%;
+    max-height:85vh;
+    overflow-y:auto;
+    padding:30px 30px 24px;
+    position:relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    border: 6px solid var(--pink-soft);
+    animation: pop-in .3s ease;
+  }
+  @keyframes pop-in {
+    from { transform:scale(0.85); opacity:0; }
+    to { transform:scale(1); opacity:1; }
+  }
+  #bookpage h2 {
+    color:#a3216b; text-align:center; margin-top:0;
+  }
+  #bookpage .cover-icon { display:block; text-align:center; font-size:3em; margin-bottom:6px; }
+  #bookpage p.rhyme {
+    white-space:pre-line;
+    font-size:1.15em;
+    line-height:1.8;
+    color:#5a3a20;
+    text-align:center;
+  }
+  #closeBtn {
+    position:absolute; top:12px; right:16px;
+    background:var(--pink-deep); color:white;
+    border:none; border-radius:50%;
+    width:34px; height:34px; font-size:1.1em;
+    cursor:pointer;
+  }
+
+  #decor-layer {
+    position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden;
+  }
+  .decor-item {
+    position:absolute;
+    font-size: 1.4em;
+    animation: decor-float linear infinite;
+    opacity:0.55;
+  }
+  @keyframes decor-float {
+    from { transform: translateY(10vh) translateX(0) rotate(0deg); opacity:0; }
+    10%  { opacity:0.55; }
+    90%  { opacity:0.55; }
+    to   { transform: translateY(-110vh) translateX(15px) rotate(20deg); opacity:0; }
+  }
+  nav, h1, .sub, #shelf { position:relative; z-index:5; }
+</style>
+</head>
+<body>
+<div id="decor-layer"></div>
+
+<nav>
+  <a href="accueil.html">🌟 Accueil</a>
+  <a href="animaux-compliments.html">🏡 Jardin</a>
+  <a href="jeu-compter.html">🔢 Compter</a>
+  <a href="couleurs.html">🎨 Couleurs</a>
+  <a href="bibliotheque.html" class="active">📚 Comptines</a>
+</nav>
+
+<h1>📚 La Bibliothèque des Comptines</h1>
+<div class="sub">Clique sur un livre pour l'ouvrir et le lire ✨</div>
+
+<div id="shelf"></div>
+
+<div id="overlay">
+  <div id="bookpage">
+    <button id="closeBtn">✕</button>
+    <span class="cover-icon" id="pageIcon"></span>
+    <h2 id="pageTitle"></h2>
+    <p class="rhyme" id="pageText"></p>
+  </div>
+</div>
+
+<script>
+const colors = ['#ff8fc7','#7fc8f8','#8ee6a1','#ffcf6b','#c39bff','#ff9b7a','#6bd6c9','#f7b6d2'];
+
+const books = [
+  {
+    icon:'🐭', title:'Une souris verte',
+    text:`Une souris verte
+Qui courait dans l'herbe,
+Je l'attrape par la queue,
+Je la montre à ces messieurs.
+
+Ces messieurs me disent :
+Trempez-la dans l'huile,
+Trempez-la dans l'eau,
+Ça fera un escargot tout chaud !
+
+Je la mets dans un tiroir,
+Elle me dit qu'il fait trop noir,
+Je la mets dans mon chapeau,
+Elle me dit qu'il fait trop chaud !`
+  },
+  {
+    icon:'🐺', title:'Promenons-nous dans les bois',
+    text:`Promenons-nous dans les bois
+Pendant que le loup n'y est pas,
+Si le loup y était,
+Il nous mangerait,
+Mais comme il n'y est pas,
+Il nous mangera pas.
+
+Loup, y es-tu ?
+Que fais-tu ?
+M'entends-tu ?`
+  },
+  {
+    icon:'🌉', title:'Sur le pont d\\'Avignon',
+    text:`Sur le pont d'Avignon,
+L'on y danse, l'on y danse,
+Sur le pont d'Avignon,
+L'on y danse tous en rond.
+
+Les beaux messieurs font comme ça,
+Et puis encore comme ça.
+
+Les belles dames font comme ça,
+Et puis encore comme ça.`
+  },
+  {
+    icon:'😴', title:'Meunier, tu dors',
+    text:`Meunier, tu dors,
+Ton moulin, ton moulin va trop vite,
+Meunier, tu dors,
+Ton moulin, ton moulin va trop fort.
+
+Ton moulin, ton moulin va trop vite,
+Ton moulin, ton moulin va trop fort.`
+  },
+  {
+    icon:'🎻', title:'Ainsi font font font',
+    text:`Ainsi font, font, font,
+Les petites marionnettes,
+Ainsi font, font, font,
+Trois petits tours et puis s'en vont.
+
+Les mains aux côtés,
+Sautez, sautez, marionnettes,
+Les mains aux côtés,
+Marionnettes recommencez.`
+  },
+  {
+    icon:'🌙', title:'Fais dodo',
+    text:`Fais dodo, Colas mon p'tit frère,
+Fais dodo, t'auras du lolo.
+
+Maman est en haut,
+Qui fait du gâteau,
+Papa est en bas,
+Qui fait du chocolat.
+
+Fais dodo, Colas mon p'tit frère,
+Fais dodo, t'auras du lolo.`
+  },
+  {
+    icon:'⛵', title:'Il était un petit navire',
+    text:`Il était un petit navire,
+Il était un petit navire,
+Qui n'avait ja-ja-jamais navigué,
+Qui n'avait ja-ja-jamais navigué.
+
+Ohé ! Ohé !
+
+Il entreprit un long voyage,
+Il entreprit un long voyage,
+Sur la mer Mé-mé-méditerranée,
+Sur la mer Mé-mé-méditerranée.
+
+Ohé ! Ohé !`
+  },
+  {
+    icon:'🔔', title:'Frère Jacques',
+    text:`Frère Jacques, Frère Jacques,
+Dormez-vous ? Dormez-vous ?
+Sonnez les matines, sonnez les matines,
+Ding, ding, dong. Ding, ding, dong.`
+  },
+  {
+    icon:'🐰', title:'Le petit lapin blanc',
+    text:`Un petit lapin blanc
+Assis sur une pierre
+Faisait sa toilette
+Avec ses deux mains blanches.
+
+Il se frotte le museau,
+Il se frotte les oreilles,
+Petit lapin, sauve-toi,
+Voici venir le chasseur !`
+  },
+  {
+    icon:'🦆', title:'Petit escargot',
+    text:`Petit escargot,
+Porte sur son dos,
+Sa maisonnette.
+Aussitôt qu'il pleut,
+Il est tout heureux,
+Il sort sa tête.`
+  }
+];
+
+const shelf = document.getElementById('shelf');
+books.forEach((b,i) => {
+  const el = document.createElement('div');
+  el.className = 'book';
+  el.style.background = colors[i % colors.length];
+  el.innerHTML = `<span class="icon">${b.icon}</span><span class="title">${b.title}</span>`;
+  el.addEventListener('click', () => openBook(b));
+  shelf.appendChild(el);
+});
+
+const overlay = document.getElementById('overlay');
+function openBook(b) {
+  document.getElementById('pageIcon').textContent = b.icon;
+  document.getElementById('pageTitle').textContent = b.title;
+  document.getElementById('pageText').textContent = b.text;
+  overlay.classList.add('open');
+}
+document.getElementById('closeBtn').addEventListener('click', () => overlay.classList.remove('open'));
+overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+/* ---- Décor flottant ---- */
+function rand(a,b){ return Math.random()*(b-a)+a; }
+const decorLayer = document.getElementById('decor-layer');
+const decorEmojis = ['📖','🍃','✨','🎵','⭐'];
+for (let i=0;i<12;i++){
+  const d = document.createElement('div');
+  d.className = 'decor-item';
+  d.textContent = decorEmojis[Math.floor(rand(0, decorEmojis.length))];
+  d.style.left = rand(0,96)+'%';
+  d.style.fontSize = rand(1,2)+'em';
+  d.style.animationDuration = rand(14,26)+'s';
+  d.style.animationDelay = rand(0,20)+'s';
+  decorLayer.appendChild(d);
+}
+</script>
+</body>
+</html>

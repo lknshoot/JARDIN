@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>✨ Bienvenue dans un Monde Merveilleux ✨</title>
+<style>
+  :root { --pink-deep:#e6398f; --pink-soft:#ffd6e8; }
+  * { box-sizing:border-box; }
+  html,body {
+    margin:0; padding:0; min-height:100vh;
+    font-family:'Comic Sans MS','Trebuchet MS',sans-serif;
+    overflow-x:hidden;
+    background: linear-gradient(160deg,#a1e3ff 0%, #c9b6ff 35%, #ffb6d9 70%, #ffe0b0 100%);
+    position:relative;
+  }
+
+  #stars-layer, #balloons-layer {
+    position:fixed; inset:0; pointer-events:none; z-index:1;
+    overflow:hidden;
+  }
+  .twinkle {
+    position:absolute;
+    font-size: 1.2em;
+    animation: twinkle 2.2s ease-in-out infinite;
+    opacity:0.8;
+  }
+  @keyframes twinkle {
+    0%,100% { opacity:0.3; transform:scale(0.9); }
+    50% { opacity:1; transform:scale(1.2); }
+  }
+  .balloon {
+    position:absolute;
+    font-size: 2.4em;
+    bottom: -10%;
+    animation: float-up linear infinite;
+    opacity:0.9;
+  }
+  @keyframes float-up {
+    from { transform: translateY(0) translateX(0) rotate(-4deg); }
+    50%  { transform: translateY(-60vh) translateX(20px) rotate(4deg); }
+    to   { transform: translateY(-120vh) translateX(-10px) rotate(-4deg); }
+  }
+
+  nav {
+    position:relative; z-index:10;
+    display:flex; justify-content:center; gap:10px;
+    padding:16px 10px 0; flex-wrap:wrap;
+  }
+  nav a {
+    text-decoration:none;
+    background:rgba(255,255,255,0.88);
+    border:3px solid var(--pink-deep);
+    color:var(--pink-deep);
+    font-weight:bold;
+    padding:7px 16px;
+    border-radius:20px;
+    font-size:0.9em;
+    transition: transform .15s ease, background .15s ease;
+  }
+  nav a:hover { transform: translateY(-2px) scale(1.05); background:var(--pink-soft); }
+  nav a.active { background:var(--pink-deep); color:white; }
+
+  #hero {
+    position:relative; z-index:5;
+    text-align:center;
+    padding: 30px 20px 10px;
+  }
+
+  #hero .wave-emoji {
+    font-size: 3.4em;
+    display:inline-block;
+    animation: wave 1.8s ease-in-out infinite;
+    transform-origin: 70% 70%;
+  }
+  @keyframes wave {
+    0%,100% { transform: rotate(0deg); }
+    20% { transform: rotate(18deg); }
+    40% { transform: rotate(-10deg); }
+    60% { transform: rotate(14deg); }
+    80% { transform: rotate(0deg); }
+  }
+
+  #hero h1 {
+    font-size: 2.4em;
+    margin: 10px 0 6px;
+    color: #ffffff;
+    text-shadow: 3px 3px 0 var(--pink-deep), 0 0 24px rgba(255,255,255,0.6);
+    animation: bounce-title 2.4s ease-in-out infinite;
+  }
+  @keyframes bounce-title {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  #hero p {
+    max-width: 560px;
+    margin: 0 auto;
+    font-size: 1.15em;
+    color: #4a2c5e;
+    background: rgba(255,255,255,0.55);
+    border-radius: 20px;
+    padding: 14px 20px;
+    font-weight:bold;
+  }
+
+  #enter-btn {
+    display:inline-block;
+    margin-top: 22px;
+    background: var(--pink-deep);
+    color:white;
+    font-size: 1.2em;
+    font-weight:bold;
+    border:none;
+    padding: 14px 34px;
+    border-radius: 30px;
+    cursor:pointer;
+    box-shadow: 0 8px 0 #a3216b, 0 10px 18px rgba(0,0,0,0.2);
+    transition: transform .12s ease;
+    text-decoration:none;
+  }
+  #enter-btn:hover { transform: translateY(-3px); }
+  #enter-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #a3216b; }
+
+  #menu-title {
+    text-align:center; margin: 40px 0 6px;
+    color:#4a2c5e; font-size:1.3em; position:relative; z-index:5;
+  }
+
+  #cards {
+    position:relative; z-index:5;
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 22px;
+    max-width: 940px;
+    margin: 20px auto 60px;
+    padding: 0 24px;
+  }
+
+  .card {
+    text-decoration:none;
+    border-radius: 22px;
+    padding: 26px 18px;
+    text-align:center;
+    color:white;
+    font-weight:bold;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.15), 0 12px 20px rgba(0,0,0,0.15);
+    transition: transform .2s ease;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .card:hover { transform: translateY(-6px) scale(1.03); }
+  .card .icon { font-size: 3em; }
+  .card .label { font-size: 1.15em; }
+  .card .desc { font-size: 0.82em; font-weight:normal; opacity:0.95; }
+
+  .card.c1 { background: linear-gradient(160deg,#ff9ecb,#e6398f); }
+  .card.c2 { background: linear-gradient(160deg,#8fd3ff,#3f9fe0); }
+  .card.c3 { background: linear-gradient(160deg,#ffe08a,#ffb347); }
+  .card.c4 { background: linear-gradient(160deg,#b7f0c0,#4caf50); }
+
+  footer {
+    position:relative; z-index:5;
+    text-align:center;
+    color:#4a2c5e;
+    font-size:0.8em;
+    padding-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div id="stars-layer"></div>
+<div id="balloons-layer"></div>
+
+<nav>
+  <a href="accueil.html" class="active">🌟 Accueil</a>
+  <a href="animaux-compliments.html">🏡 Jardin</a>
+  <a href="jeu-compter.html">🔢 Compter</a>
+  <a href="couleurs.html">🎨 Couleurs</a>
+  <a href="bibliotheque.html">📚 Comptines</a>
+</nav>
+
+<div id="hero">
+  <span class="wave-emoji">👋</span>
+  <h1>Bienvenue, petit aventurier ! ✨</h1>
+  <p>Un monde merveilleux t'attend, plein d'amis à câliner, de couleurs à découvrir, de comptines à chanter et de jeux amusants pour apprendre à compter. Prêt(e) pour l'aventure ?</p>
+  <br>
+  <a id="enter-btn" href="animaux-compliments.html">Entrer dans le monde magique 🌈</a>
+</div>
+
+<div id="menu-title">Ou choisis directement où t'amuser 👇</div>
+
+<div id="cards">
+  <a class="card c1" href="animaux-compliments.html">
+    <span class="icon">🏡</span>
+    <span class="label">Le Jardin</span>
+    <span class="desc">Des amis tout doux qui te font des compliments</span>
+  </a>
+  <a class="card c2" href="jeu-compter.html">
+    <span class="icon">🔢</span>
+    <span class="label">Apprendre à Compter</span>
+    <span class="desc">Soulève des objets et éclate des bulles en comptant</span>
+  </a>
+  <a class="card c3" href="couleurs.html">
+    <span class="icon">🎨</span>
+    <span class="label">Les Couleurs</span>
+    <span class="desc">Découvre les couleurs et teste-toi avec un petit quiz</span>
+  </a>
+  <a class="card c4" href="bibliotheque.html">
+    <span class="icon">📚</span>
+    <span class="label">Comptines Amusantes</span>
+    <span class="desc">Plein de chansons rigolotes à lire et à chanter</span>
+  </a>
+</div>
+
+<footer>Fait avec amour 🎀</footer>
+
+<script>
+function rand(a,b){ return Math.random()*(b-a)+a; }
+
+const starsLayer = document.getElementById('stars-layer');
+const twinkleEmojis = ['✨','⭐','🌟'];
+for (let i=0;i<18;i++){
+  const s = document.createElement('div');
+  s.className='twinkle';
+  s.textContent = twinkleEmojis[Math.floor(Math.random()*twinkleEmojis.length)];
+  s.style.left = rand(0,100)+'%';
+  s.style.top = rand(0,90)+'%';
+  s.style.animationDelay = rand(0,2)+'s';
+  s.style.fontSize = rand(0.8,1.6)+'em';
+  starsLayer.appendChild(s);
+}
+
+const balloonsLayer = document.getElementById('balloons-layer');
+const balloonEmojis = ['🎈','🎈','🎈','🦋','🌸'];
+for (let i=0;i<10;i++){
+  const b = document.createElement('div');
+  b.className='balloon';
+  b.textContent = balloonEmojis[Math.floor(Math.random()*balloonEmojis.length)];
+  b.style.left = rand(0,95)+'%';
+  b.style.animationDuration = rand(14,26)+'s';
+  b.style.animationDelay = rand(0,20)+'s';
+  b.style.fontSize = rand(1.6,2.8)+'em';
+  balloonsLayer.appendChild(b);
+}
+</script>
+</body>
+</html>
