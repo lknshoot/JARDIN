@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔤 J'apprends l'alphabet</title>
+<style>
+  :root {
+    --pink-deep:#e6398f;
+    --pink-soft:#ffd6e8;
+    --ink:#4a2c5e;
+    --sky:#dff5ff;
+    --yellow:#ffd76a;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0;
+    min-height:100vh;
+    font-family:'Comic Sans MS','Trebuchet MS',sans-serif;
+    color:var(--ink);
+    background:linear-gradient(160deg,#dff5ff 0%,#fff3d6 48%,#ffdceb 100%);
+    padding-bottom:40px;
+  }
+  nav {
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    padding:16px 10px 0;
+    flex-wrap:wrap;
+  }
+  nav a {
+    text-decoration:none;
+    background:rgba(255,255,255,0.9);
+    border:3px solid var(--pink-deep);
+    color:var(--pink-deep);
+    font-weight:bold;
+    padding:7px 14px;
+    border-radius:20px;
+    font-size:0.9em;
+    transition:transform .15s ease,background .15s ease;
+  }
+  nav a:hover, nav a.active { background:var(--pink-deep); color:white; transform:translateY(-2px); }
+  header { text-align:center; padding:24px 18px 12px; }
+  h1 {
+    margin:0 0 8px;
+    color:#a3216b;
+    font-size:2.2em;
+    text-shadow:2px 2px 0 white;
+  }
+  header p { margin:0 auto; max-width:620px; font-size:1.05em; }
+  #letter-display {
+    width:min(92%,620px);
+    margin:12px auto 24px;
+    padding:16px 20px;
+    text-align:center;
+    background:rgba(255,255,255,.8);
+    border:4px solid var(--yellow);
+    border-radius:20px;
+    box-shadow:0 6px 0 rgba(164,107,25,.13);
+    min-height:86px;
+  }
+  #letter-display strong { color:var(--pink-deep); font-size:1.45em; }
+  #letter-display span { display:block; margin-top:4px; }
+  #alphabet-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+    gap:16px;
+    max-width:1080px;
+    margin:0 auto;
+    padding:0 18px;
+  }
+  .letter-card {
+    min-height:154px;
+    border:0;
+    border-radius:18px;
+    padding:14px 10px;
+    color:#fff;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    font:inherit;
+    font-weight:bold;
+    box-shadow:0 6px 0 rgba(0,0,0,.14),0 8px 15px rgba(0,0,0,.1);
+    transition:transform .15s ease,filter .15s ease;
+  }
+  .letter-card:hover, .letter-card:focus-visible { transform:translateY(-5px) scale(1.03); filter:saturate(1.12); outline:4px solid white; outline-offset:2px; }
+  .letter-card.selected { outline:4px solid var(--pink-deep); outline-offset:2px; transform:translateY(-4px); }
+  .letter { font-size:2.5em; line-height:1; text-shadow:2px 2px 0 rgba(0,0,0,.16); }
+  .picture { font-size:2.4em; line-height:1; }
+  .word { font-size:1em; }
+  #listen-btn {
+    display:block;
+    margin:24px auto 0;
+    border:3px solid var(--pink-deep);
+    border-radius:22px;
+    padding:10px 20px;
+    background:white;
+    color:var(--pink-deep);
+    font:inherit;
+    font-weight:bold;
+    cursor:pointer;
+  }
+  #listen-btn:hover { background:var(--pink-soft); }
+  footer { text-align:center; padding:26px 10px 0; font-size:.82em; }
+  @media (max-width:520px) {
+    nav a { padding:7px 10px; font-size:.82em; }
+    h1 { font-size:1.8em; }
+    #alphabet-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .letter-card { min-height:140px; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a href="accueil.html">🌟 Accueil</a>
+  <a href="IndexF.html">🏡 Jardin</a>
+  <a href="jeu-compter.html">🔢 Compter</a>
+  <a href="couleurs.html">🎨 Couleurs</a>
+  <a href="bibliotheque.html">📚 Comptines</a>
+  <a href="alphabet.html" class="active">🔤 Alphabet</a>
+</nav>
+
+<header>
+  <h1>🔤 J'apprends l'alphabet</h1>
+  <p>Clique sur une carte pour découvrir une lettre, un animal ou un objet.</p>
+</header>
+
+<div id="letter-display" role="status" aria-live="polite">
+  Choisis une lettre pour commencer 🌟
+</div>
+
+<main id="alphabet-grid" aria-label="Les lettres de l'alphabet"></main>
+<button id="listen-btn" type="button">🔊 Réécouter la lettre</button>
+<footer>Chaque lettre cache une petite découverte ✨</footer>
+
+<script>
+const alphabet = [
+  ['A','Abeille','🐝'], ['B','Baleine','🐋'], ['C','Chat','🐱'],
+  ['D','Dauphin','🐬'], ['E','Éléphant','🐘'], ['F','Fleur','🌸'],
+  ['G','Girafe','🦒'], ['H','Hérisson','🦔'], ['I','Igloo','🧊'],
+  ['J','Jardin','🌿'], ['K','Koala','🐨'], ['L','Lion','🦁'],
+  ['M','Mouton','🐑'], ['N','Nuage','☁️'], ['O','Ours','🐻'],
+  ['P','Papillon','🦋'], ['Q','Quatre','4️⃣'], ['R','Renard','🦊'],
+  ['S','Soleil','☀️'], ['T','Tortue','🐢'], ['U','Ukulélé','🎸'],
+  ['V','Vache','🐮'], ['W','Wapiti','🦌'], ['X','Xylophone','🎶'],
+  ['Y','Yoyo','🪀'], ['Z','Zèbre','🦓']
+];
+const cardColors = ['#e85d9e','#4fa9d8','#f2ad45','#60b86b','#8d78c8','#e97855'];
+const grid = document.getElementById('alphabet-grid');
+const display = document.getElementById('letter-display');
+const listenButton = document.getElementById('listen-btn');
+let selected = null;
+
+function frenchVoice() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  return voices.find(voice => voice.lang.toLowerCase().startsWith('fr') && /denise|julie|hortense|google|natural|female|femme/i.test(voice.name))
+    || voices.find(voice => voice.lang.toLowerCase().startsWith('fr'))
+    || null;
+}
+
+function speakSelection() {
+  if (!selected || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(`${selected[0]}, comme ${selected[1]}`);
+  utterance.lang = 'fr-FR';
+  utterance.rate = 0.8;
+  utterance.pitch = 1.12;
+  utterance.voice = frenchVoice();
+  window.speechSynthesis.speak(utterance);
+}
+
+function selectLetter(item, card) {
+  selected = item;
+  document.querySelectorAll('.letter-card').forEach(element => element.classList.remove('selected'));
+  card.classList.add('selected');
+  display.innerHTML = `<strong>${item[0]}</strong> comme <strong>${item[1]}</strong> ${item[2]}`;
+  speakSelection();
+}
+
+alphabet.forEach((item, index) => {
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'letter-card';
+  card.style.background = cardColors[index % cardColors.length];
+  card.setAttribute('aria-label', `${item[0]} comme ${item[1]}`);
+  card.innerHTML = `<span class="letter">${item[0]}</span><span class="picture" aria-hidden="true">${item[2]}</span><span class="word">${item[1]}</span>`;
+  card.addEventListener('click', () => selectLetter(item, card));
+  grid.appendChild(card);
+});
+
+listenButton.addEventListener('click', speakSelection);
+</script>
+</body>
+</html>

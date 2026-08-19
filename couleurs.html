@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🎨 Apprends les Couleurs</title>
 <style>
   :root { --pink-deep:#e6398f; --pink-soft:#ffd6e8; }
@@ -159,10 +160,11 @@
 
 <nav>
   <a href="accueil.html">🌟 Accueil</a>
-  <a href="animaux-compliments.html">🏡 Jardin</a>
+  <a href="IndexF.html">🏡 Jardin</a>
   <a href="jeu-compter.html">🔢 Compter</a>
   <a href="couleurs.html" class="active">🎨 Couleurs</a>
   <a href="bibliotheque.html">📚 Comptines</a>
+  <a href="alphabet.html">🔤 Alphabet</a>
 </nav>
 
 <h1>🎨 Apprends les Couleurs</h1>
@@ -212,13 +214,21 @@ const colors = [
 ];
 const shapes = ['⬤','⬤','⬤','⬤'];
 
+function getWarmFrenchVoice(){
+  const voices = window.speechSynthesis.getVoices();
+  const frenchVoices = voices.filter(voice => voice.lang.toLowerCase().startsWith('fr'));
+  return frenchVoices.find(voice => /denise|julie|hortense|google|natural|female|femme/i.test(voice.name)) || frenchVoices[0] || null;
+}
+
 function speak(text){
   try {
     if ('speechSynthesis' in window){
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'fr-FR';
-      u.rate = 0.9;
-      u.pitch = 1.15;
+      u.rate = 0.82;
+      u.pitch = 1.12;
+      u.volume = 1;
+      u.voice = getWarmFrenchVoice();
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(u);
     }

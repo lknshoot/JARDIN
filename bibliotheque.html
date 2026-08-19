@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📚 Bibliothèque des Comptines</title>
 <style>
   :root { --pink-deep:#e6398f; --pink-soft:#ffd6e8; }
@@ -103,6 +104,32 @@
     color:#5a3a20;
     text-align:center;
   }
+  #music-controls {
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    margin-top:18px;
+  }
+  #music-controls button {
+    border:3px solid var(--pink-deep);
+    border-radius:20px;
+    padding:8px 16px;
+    background:white;
+    color:var(--pink-deep);
+    font:inherit;
+    font-weight:bold;
+    cursor:pointer;
+  }
+  #music-controls button:hover { background:var(--pink-soft); }
+  #music-status {
+    flex-basis:100%;
+    min-height:1.2em;
+    color:#8a5a1f;
+    text-align:center;
+    font-size:0.9em;
+  }
   #closeBtn {
     position:absolute; top:12px; right:16px;
     background:var(--pink-deep); color:white;
@@ -134,10 +161,11 @@
 
 <nav>
   <a href="accueil.html">🌟 Accueil</a>
-  <a href="animaux-compliments.html">🏡 Jardin</a>
+  <a href="IndexF.html">🏡 Jardin</a>
   <a href="jeu-compter.html">🔢 Compter</a>
   <a href="couleurs.html">🎨 Couleurs</a>
   <a href="bibliotheque.html" class="active">📚 Comptines</a>
+  <a href="alphabet.html">🔤 Alphabet</a>
 </nav>
 
 <h1>📚 La Bibliothèque des Comptines</h1>
@@ -151,6 +179,11 @@
     <span class="cover-icon" id="pageIcon"></span>
     <h2 id="pageTitle"></h2>
     <p class="rhyme" id="pageText"></p>
+    <div id="music-controls">
+      <button type="button" id="playMusicBtn">▶️ Écouter la musique</button>
+      <button type="button" id="stopMusicBtn">⏹️ Arrêter</button>
+      <span id="music-status" role="status" aria-live="polite"></span>
+    </div>
   </div>
 </div>
 
@@ -189,7 +222,7 @@ Que fais-tu ?
 M'entends-tu ?`
   },
   {
-    icon:'🌉', title:'Sur le pont d\\'Avignon',
+    icon:'🌉', title:'Sur le pont d\'Avignon',
     text:`Sur le pont d'Avignon,
 L'on y danse, l'on y danse,
 Sur le pont d'Avignon,
@@ -282,25 +315,118 @@ Il sort sa tête.`
   }
 ];
 
+const noteFrequencies = {
+  C4:261.63, D4:293.66, E4:329.63, F4:349.23, G4:392.00,
+  A4:440.00, B4:493.88, C5:523.25, D5:587.33, E5:659.25
+};
+const musicPatterns = [
+  ['C4','E4','G4','G4','A4','G4','E4','C4'],
+  ['G4','G4','A4','B4','A4','G4','E4','G4'],
+  ['C4','C4','D4','E4','E4','D4','C4','G4'],
+  ['C4','C4','G4','G4','A4','A4','G4','E4'],
+  ['C4','C4','G4','G4','A4','A4','G4','E4'],
+  ['C5','A4','A4','G4','A4','C5','B4','G4'],
+  ['C4','E4','G4','C5','B4','A4','G4','E4'],
+  ['C4','D4','E4','C4','C4','D4','E4','C4'],
+  ['G4','E4','E4','F4','D4','D4','C4','E4'],
+  ['C4','C4','F4','F4','A4','A4','G4','F4']
+];
+
 const shelf = document.getElementById('shelf');
 books.forEach((b,i) => {
   const el = document.createElement('div');
   el.className = 'book';
   el.style.background = colors[i % colors.length];
   el.innerHTML = `<span class="icon">${b.icon}</span><span class="title">${b.title}</span>`;
-  el.addEventListener('click', () => openBook(b));
+  el.addEventListener('click', () => openBook(b, i));
   shelf.appendChild(el);
 });
 
 const overlay = document.getElementById('overlay');
-function openBook(b) {
+const musicStatus = document.getElementById('music-status');
+let audioContext = null;
+let activeOscillators = [];
+let musicTimer = null;
+let musicRunId = 0;
+
+function stopMusic(showStatus = true) {
+  musicRunId++;
+  activeOscillators.forEach(oscillator => {
+    try { oscillator.stop(); } catch(e) {}
+  });
+  activeOscillators = [];
+  if (musicTimer) {
+    clearTimeout(musicTimer);
+    musicTimer = null;
+  }
+  if (showStatus) musicStatus.textContent = 'Musique arrêtée';
+}
+
+async function playMusic(bookIndex) {
+  stopMusic(false);
+  const runId = musicRunId;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) {
+    musicStatus.textContent = 'La musique n’est pas disponible dans ce navigateur';
+    return;
+  }
+  audioContext = audioContext || new AudioContextClass();
+  const melody = musicPatterns[bookIndex % musicPatterns.length];
+  const beatDuration = 0.42;
+  const repetitions = 3;
+  let startTime = audioContext.currentTime + 0.05;
+
+  try {
+    await audioContext.resume();
+  } catch(e) {
+    musicStatus.textContent = 'Clique à nouveau sur Lecture pour démarrer la musique';
+    return;
+  }
+  if (runId !== musicRunId) return;
+  for (let repetition = 0; repetition < repetitions; repetition++) {
+    melody.forEach((note, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      const duration = beatDuration * (index % 4 === 3 ? 1.5 : 1);
+      oscillator.type = 'sine';
+      oscillator.frequency.value = noteFrequencies[note];
+      gain.gain.setValueAtTime(0.0001, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.16, startTime + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+      oscillator.connect(gain).connect(audioContext.destination);
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration + 0.02);
+      activeOscillators.push(oscillator);
+      startTime += duration;
+    });
+  }
+  musicStatus.textContent = '♫ Une petite musique accompagne la comptine';
+  musicTimer = setTimeout(() => {
+    activeOscillators = [];
+    musicStatus.textContent = 'Musique terminée';
+  }, (startTime - audioContext.currentTime) * 1000);
+}
+
+function openBook(b, bookIndex) {
+  stopMusic(false);
   document.getElementById('pageIcon').textContent = b.icon;
   document.getElementById('pageTitle').textContent = b.title;
   document.getElementById('pageText').textContent = b.text;
+  musicStatus.textContent = '';
+  document.getElementById('playMusicBtn').onclick = () => playMusic(bookIndex);
   overlay.classList.add('open');
 }
-document.getElementById('closeBtn').addEventListener('click', () => overlay.classList.remove('open'));
-overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
+document.getElementById('stopMusicBtn').addEventListener('click', () => stopMusic());
+document.getElementById('closeBtn').addEventListener('click', () => {
+  stopMusic(false);
+  overlay.classList.remove('open');
+});
+overlay.addEventListener('click', (e) => {
+  if (e.target === overlay) {
+    stopMusic(false);
+    overlay.classList.remove('open');
+  }
+});
 
 /* ---- Décor flottant ---- */
 function rand(a,b){ return Math.random()*(b-a)+a; }
