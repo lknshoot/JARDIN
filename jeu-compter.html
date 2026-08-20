@@ -176,6 +176,17 @@
     to   { transform: translateY(-110vh) translateX(-15px) rotate(-15deg); opacity:0; }
   }
   nav, h1, #tabs, .panel { position:relative; z-index:5; }
+  @media (max-width:600px) {
+    nav { gap:6px; padding:10px 8px; }
+    nav a { padding:6px 9px; border-width:2px; font-size:.78em; }
+    h1 { font-size:1.65em; line-height:1.15; padding:0 12px; }
+    #tabs { gap:8px; }
+    .tab-btn { padding:8px 12px; font-size:.9em; }
+    .panel { padding:0 10px; }
+    #target-banner { font-size:1.1em; padding:11px 8px; }
+    #counter-big { font-size:2.8em; }
+    #bubble-field { height:360px; border-radius:18px; }
+  }
 </style>
 </head>
 <body>
@@ -185,6 +196,7 @@
   <a href="accueil.html">🌟 Accueil</a>
   <a href="IndexF.html">🏡 Jardin</a>
   <a href="jeu-compter.html" class="active">🔢 Compter</a>
+  <a href="triage.html">🧺 Triage</a>
   <a href="couleurs.html">🎨 Couleurs</a>
   <a href="bibliotheque.html">📚 Comptines</a>
   <a href="alphabet.html">🔤 Alphabet</a>

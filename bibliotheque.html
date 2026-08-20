@@ -154,6 +154,21 @@
     to   { transform: translateY(-110vh) translateX(15px) rotate(20deg); opacity:0; }
   }
   nav, h1, .sub, #shelf { position:relative; z-index:5; }
+  @media (max-width:600px) {
+    nav { gap:6px; padding:10px 8px; }
+    nav a { padding:6px 9px; border-width:2px; font-size:.78em; }
+    h1 { font-size:1.65em; line-height:1.15; padding:0 12px; }
+    .sub { font-size:.9em; padding:0 14px; line-height:1.35; }
+    #shelf { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding:0 12px; }
+    .book { min-height:145px; padding:12px 7px; }
+    .book .icon { font-size:2.2em; }
+    .book .title { font-size:.86em; }
+    #overlay { padding:12px; }
+    #bookpage { max-height:88vh; padding:26px 16px 18px; border-width:4px; }
+    #bookpage p.rhyme { font-size:1em; line-height:1.55; }
+    #music-controls { gap:7px; }
+    #music-controls button { padding:7px 10px; font-size:.84em; }
+  }
 </style>
 </head>
 <body>
@@ -163,6 +178,7 @@
   <a href="accueil.html">🌟 Accueil</a>
   <a href="IndexF.html">🏡 Jardin</a>
   <a href="jeu-compter.html">🔢 Compter</a>
+  <a href="triage.html">🧺 Triage</a>
   <a href="couleurs.html">🎨 Couleurs</a>
   <a href="bibliotheque.html" class="active">📚 Comptines</a>
   <a href="alphabet.html">🔤 Alphabet</a>

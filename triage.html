@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧺 Le jeu du tri</title>
+<style>
+  :root {
+    --pink-deep: #e6398f;
+    --ink: #3f3154;
+    --green: #258a62;
+    --green-soft: #dff7e9;
+    --yellow: #f2b544;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+    color: var(--ink);
+    background: linear-gradient(145deg, #fff0c9 0%, #ffd6e8 48%, #bce9ff 100%);
+    overflow-x: hidden;
+  }
+  body::before, body::after {
+    position: fixed;
+    pointer-events: none;
+    font-size: 3.5rem;
+    opacity: .42;
+    z-index: 0;
+  }
+  body::before { content: '🍃'; top: 18%; left: 3%; transform: rotate(-20deg); }
+  body::after { content: '🌼'; right: 4%; bottom: 8%; }
+  nav {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    gap: 9px;
+    padding: 14px 10px;
+    flex-wrap: wrap;
+  }
+  nav a {
+    text-decoration: none;
+    background: rgba(255,255,255,.9);
+    border: 3px solid var(--pink-deep);
+    color: var(--pink-deep);
+    font-weight: bold;
+    padding: 7px 13px;
+    border-radius: 20px;
+    font-size: .88em;
+  }
+  nav a.active { color: white; background: var(--pink-deep); }
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 8px 18px 40px;
+  }
+  h1 { margin: 4px 0 4px; text-align: center; color: #71438d; text-shadow: 2px 2px white; font-size: 2.25em; }
+  .intro { max-width: 620px; margin: 0 auto 16px; text-align: center; font-weight: bold; font-size: 1.05em; }
+  .status {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 12px auto 18px;
+  }
+  .status span { background: rgba(255,255,255,.8); border: 2px solid #f0b4cf; border-radius: 16px; padding: 7px 14px; font-weight: bold; }
+  #round-number, #score { color: var(--pink-deep); }
+  #message { min-height: 30px; text-align: center; color: var(--green); font-size: 1.18em; font-weight: bold; }
+  .game-board { display: grid; grid-template-columns: 1fr 1.25fr; gap: 18px; align-items: start; }
+  .section-title { margin: 0 0 10px; text-align: center; font-size: 1.1em; }
+  #objects-field {
+    min-height: 360px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(70px, 1fr));
+    gap: 12px;
+    align-content: center;
+    padding: 18px;
+    background: rgba(255,255,255,.62);
+    border: 4px dashed #e4a7c9;
+    border-radius: 22px;
+  }
+  .object {
+    min-width: 0;
+    aspect-ratio: 1;
+    border: 3px solid #fff;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(63,49,84,.14);
+    cursor: pointer;
+    font-size: 2.7em;
+    transition: transform .15s ease, outline .15s ease, opacity .2s ease;
+  }
+  .object:hover, .object.selected { transform: translateY(-4px) scale(1.05); outline: 4px solid var(--yellow); }
+  .object.sorted { opacity: .28; pointer-events: none; transform: scale(.88); }
+  #families { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .family {
+    min-height: 160px;
+    border: 4px solid var(--family-color);
+    border-radius: 20px;
+    background: var(--family-bg);
+    color: var(--ink);
+    cursor: pointer;
+    padding: 14px 8px;
+    font: inherit;
+    font-weight: bold;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .family:hover, .family:focus-visible { transform: translateY(-3px); background: #fff; }
+  .family-icon { display: block; font-size: 2.8em; margin-bottom: 4px; }
+  .family-count { display: block; margin-top: 8px; font-size: .82em; font-weight: normal; }
+  .family-toys { --family-color: #e58b42; --family-bg: #fff0d4; }
+  .family-school { --family-color: #4a9ed3; --family-bg: #e0f3ff; }
+  .family-nature { --family-color: #4eae70; --family-bg: #e2f7e8; }
+  .family-clothes { --family-color: #bc6ec8; --family-bg: #f6e5fa; }
+  #new-round {
+    display: block;
+    margin: 20px auto 0;
+    padding: 11px 22px;
+    border: 0;
+    border-radius: 18px;
+    background: var(--pink-deep);
+    color: white;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  .confetti-piece { position: absolute; font-size: 1.7em; animation: fall 1.5s ease-in forwards; }
+  @keyframes fall { from { transform: translateY(-30px) rotate(0); opacity: 1; } to { transform: translateY(100vh) rotate(420deg); opacity: 0; } }
+  @media (max-width: 680px) {
+    nav { gap: 5px; padding: 9px 7px; }
+    nav a { padding: 6px 8px; border-width: 2px; font-size: .72em; }
+    main { padding: 4px 10px 28px; }
+    h1 { font-size: 1.75em; line-height: 1.15; }
+    .intro { font-size: .95em; }
+    .game-board { grid-template-columns: 1fr; }
+    #objects-field { min-height: 260px; grid-template-columns: repeat(4, 1fr); padding: 12px; gap: 8px; }
+    .object { font-size: 2em; border-radius: 14px; }
+    .family { min-height: 132px; padding: 9px 4px; font-size: .9em; }
+    .family-icon { font-size: 2.1em; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a href="accueil.html">🌟 Accueil</a>
+  <a href="IndexF.html">🏡 Jardin</a>
+  <a href="jeu-compter.html">🔢 Compter</a>
+  <a href="triage.html" class="active">🧺 Triage</a>
+  <a href="couleurs.html">🎨 Couleurs</a>
+  <a href="bibliotheque.html">📚 Comptines</a>
+  <a href="alphabet.html">🔤 Alphabet</a>
+</nav>
+
+<main>
+  <h1>🧺 Le jeu du tri</h1>
+  <p class="intro">Choisis un objet, puis touche la famille qui lui ressemble. À toi de ranger tout le mélange !</p>
+  <div class="status" aria-live="polite">
+    <span>Manche <strong id="round-number">1</strong> / 3</span>
+    <span>Objets rangés : <strong id="score">0</strong></span>
+  </div>
+  <div id="message">Choisis un objet pour commencer.</div>
+  <div class="game-board">
+    <section>
+      <h2 class="section-title">🌈 Le mélange</h2>
+      <div id="objects-field" aria-label="Objets à trier"></div>
+    </section>
+    <section>
+      <h2 class="section-title">🧺 Les familles</h2>
+      <div id="families">
+        <button class="family family-toys" data-family="jouets"><span class="family-icon">🧸</span>Jouets<span class="family-count">0 objet</span></button>
+        <button class="family family-school" data-family="ecole"><span class="family-icon">✏️</span>École<span class="family-count">0 objet</span></button>
+        <button class="family family-nature" data-family="nature"><span class="family-icon">🌿</span>Nature<span class="family-count">0 objet</span></button>
+        <button class="family family-clothes" data-family="vetements"><span class="family-icon">👕</span>Vêtements<span class="family-count">0 objet</span></button>
+      </div>
+    </section>
+  </div>
+  <button id="new-round" type="button">🔄 Recommencer la manche</button>
+</main>
+<div id="confetti"></div>
+
+<script>
+const rounds = [
+  [
+    ['🧸', 'jouets'], ['⚽', 'jouets'], ['🪀', 'jouets'],
+    ['✏️', 'ecole'], ['📚', 'ecole'], ['🎒', 'ecole'],
+    ['🌸', 'nature'], ['🍎', 'nature'], ['🦋', 'nature'],
+    ['🧢', 'vetements'], ['👟', 'vetements'], ['🧤', 'vetements']
+  ],
+  [
+    ['🚂', 'jouets'], ['🧩', 'jouets'], ['🎲', 'jouets'],
+    ['📏', 'ecole'], ['🖍️', 'ecole'], ['📐', 'ecole'],
+    ['🌱', 'nature'], ['🍂', 'nature'], ['🐞', 'nature'],
+    ['🧣', 'vetements'], ['🧦', 'vetements'], ['👒', 'vetements']
+  ],
+  [
+    ['🎸', 'jouets'], ['🛴', 'jouets'], ['🎨', 'jouets'],
+    ['📒', 'ecole'], ['🖊️', 'ecole'], ['📌', 'ecole'],
+    ['🌻', 'nature'], ['🍄', 'nature'], ['🐝', 'nature'],
+    ['🧥', 'vetements'], ['👗', 'vetements'], ['🩴', 'vetements']
+  ]
+];
+const objectsField = document.getElementById('objects-field');
+const message = document.getElementById('message');
+const roundNumber = document.getElementById('round-number');
+const scoreElement = document.getElementById('score');
+let currentRound = 0;
+let selectedObject = null;
+let sortedCount = 0;
+
+function shuffle(items) {
+  return [...items].sort(() => Math.random() - .5);
+}
+function loadRound() {
+  selectedObject = null;
+  sortedCount = 0;
+  objectsField.innerHTML = '';
+  roundNumber.textContent = currentRound + 1;
+  scoreElement.textContent = '0';
+  document.querySelectorAll('.family-count').forEach(count => { count.textContent = '0 objet'; });
+  shuffle(rounds[currentRound]).forEach(([emoji, family]) => {
+    const objectButton = document.createElement('button');
+    objectButton.className = 'object';
+    objectButton.type = 'button';
+    objectButton.textContent = emoji;
+    objectButton.dataset.family = family;
+    objectButton.setAttribute('aria-label', 'Objet à trier');
+    objectButton.addEventListener('click', () => selectObject(objectButton));
+    objectsField.appendChild(objectButton);
+  });
+  message.textContent = 'Choisis un objet pour commencer.';
+}
+function selectObject(objectButton) {
+  if (objectButton.classList.contains('sorted')) return;
+  document.querySelectorAll('.object.selected').forEach(object => object.classList.remove('selected'));
+  selectedObject = objectButton;
+  objectButton.classList.add('selected');
+  message.textContent = 'Très bien ! Choisis maintenant sa famille.';
+}
+function sortSelected(family) {
+  if (!selectedObject) {
+    message.textContent = 'Choisis d’abord un objet dans le mélange.';
+    return;
+  }
+  if (selectedObject.dataset.family !== family) {
+    message.textContent = 'Presque ! Essaie une autre famille. 💡';
+    return;
+  }
+  selectedObject.classList.remove('selected');
+  selectedObject.classList.add('sorted');
+  sortedCount += 1;
+  scoreElement.textContent = sortedCount;
+  const familyButton = document.querySelector(`.family[data-family="${family}"]`);
+  const count = familyButton.querySelector('.family-count');
+  count.textContent = `${document.querySelectorAll(`[data-family="${family}"].sorted`).length} objet${document.querySelectorAll(`[data-family="${family}"].sorted`).length > 1 ? 's' : ''}`;
+  selectedObject = null;
+  if (sortedCount === rounds[currentRound].length) finishRound();
+  else message.textContent = 'Bravo ! Continue le rangement. 🌟';
+}
+function finishRound() {
+  launchConfetti();
+  if (currentRound < rounds.length - 1) {
+    message.textContent = 'Super tri ! La prochaine manche arrive. 🎉';
+    currentRound += 1;
+    setTimeout(loadRound, 1200);
+  } else {
+    message.textContent = 'Félicitations ! Tu as terminé les 3 manches ! 🏆';
+  }
+}
+function launchConfetti() {
+  const confetti = document.getElementById('confetti');
+  ['🎉', '⭐', '🌸', '✨', '🎈'].forEach((emoji, index) => {
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    piece.textContent = emoji;
+    piece.style.left = `${15 + index * 18}%`;
+    piece.style.animationDelay = `${index * .08}s`;
+    confetti.appendChild(piece);
+    setTimeout(() => piece.remove(), 1800);
+  });
+}
+document.querySelectorAll('.family').forEach(familyButton => {
+  familyButton.addEventListener('click', () => sortSelected(familyButton.dataset.family));
+});
+document.getElementById('new-round').addEventListener('click', loadRound);
+loadRound();
+</script>
+</body>
+</html>
